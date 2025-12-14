@@ -45,6 +45,22 @@ class Rig {
         $rig = $this->findById($rigId);
         if (!$rig) return ['error' => 'Rig not found'];
 
+        // Check how many of this rig the user already owns
+        $existingCount = $this->db->selectOne(
+            "SELECT COUNT(*) as count FROM user_rigs WHERE user_id = ? AND rig_id = ?",
+            [$userId, $rigId]
+        );
+        $userRigCount = intval($existingCount['count'] ?? 0);
+
+        // Enforce max_purchase limit
+        $maxPurchase = intval($rig['max_purchase'] ?? 10);
+        if ($userRigCount >= $maxPurchase) {
+            if ($rig['is_free']) {
+                return ['error' => 'You have already claimed this free rig'];
+            }
+            return ['error' => "You can only purchase up to {$maxPurchase} of this rig"];
+        }
+
         $user = $this->db->selectOne("SELECT balance FROM users WHERE id = ?", [$userId]);
         
         if (!$rig['is_free'] && $user['balance'] < $rig['price']) {

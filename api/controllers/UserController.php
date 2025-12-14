@@ -27,6 +27,23 @@ class UserController {
         $rigModel = new Rig();
         $rigs = $rigModel->getAll(true);
         $userRigs = $rigModel->getUserRigs($this->user['id']);
+        
+        // Add ownership count for each rig
+        $rigOwnership = [];
+        foreach ($userRigs as $ur) {
+            $rigId = $ur['rig_id'];
+            if (!isset($rigOwnership[$rigId])) {
+                $rigOwnership[$rigId] = 0;
+            }
+            $rigOwnership[$rigId]++;
+        }
+        
+        // Enrich rigs with user ownership data
+        foreach ($rigs as &$rig) {
+            $rig['user_owned_count'] = $rigOwnership[$rig['id']] ?? 0;
+            $rig['can_purchase'] = $rig['user_owned_count'] < intval($rig['max_purchase'] ?? 10);
+        }
+        
         Response::success(['rigs' => $rigs, 'user_rigs' => $userRigs]);
     }
 
@@ -169,5 +186,16 @@ class UserController {
 
         $user = $userModel->findById($this->user['id']);
         Response::success(['user' => $user], 'Profile updated');
+    }
+
+    public function collectEarnings() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            Response::error('Method not allowed');
+        }
+        
+        $userModel = new User();
+        $result = $userModel->collectMiningEarnings($this->user['id']);
+        
+        Response::success($result);
     }
 }

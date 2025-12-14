@@ -57,6 +57,10 @@ class ApiService {
         return data;
     }
 
+    async getPublicPlans() {
+        return this.request('/plans');
+    }
+
     async register(name, email, password, referredBy = null) {
         const data = await this.request('/auth/register', {
             method: 'POST',
@@ -89,6 +93,12 @@ class ApiService {
         return this.request('/user/rigs/purchase', {
             method: 'POST',
             body: JSON.stringify({ rig_id: rigId }),
+        });
+    }
+
+    async collectEarnings() {
+        return this.request('/user/collect-earnings', {
+            method: 'POST'
         });
     }
 

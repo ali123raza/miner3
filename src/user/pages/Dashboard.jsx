@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
+import MiningVisualizer from '../components/MiningVisualizer'
 
 export default function Dashboard() {
     const { user } = useAuth()
@@ -24,7 +25,8 @@ export default function Dashboard() {
         totalEarnings: 0,
         totalDeposits: 0,
         totalWithdrawals: 0,
-        pendingWithdrawals: 0
+        pendingWithdrawals: 0,
+        dailyEarnings: 0
     })
     const [transactions, setTransactions] = useState([])
 
@@ -49,7 +51,8 @@ export default function Dashboard() {
                     totalEarnings: parseFloat(dashboardRes.data.total_earnings || 0),
                     totalDeposits: parseFloat(dashboardRes.data.total_deposits || 0),
                     totalWithdrawals: parseFloat(dashboardRes.data.total_withdrawals || 0),
-                    pendingWithdrawals: parseFloat(dashboardRes.data.pending_withdrawals || 0)
+                    pendingWithdrawals: parseFloat(dashboardRes.data.pending_withdrawals || 0),
+                    dailyEarnings: parseFloat(dashboardRes.data.daily_earnings || 0)
                 })
             }
 
@@ -131,6 +134,19 @@ export default function Dashboard() {
                 </div>
             </div>
 
+            {/* Live Mining Visualizer */}
+            <MiningVisualizer
+                hashRate={stats.totalHashRate}
+                dailyEarnings={stats.dailyEarnings}
+                onRewardCollected={(data) => {
+                    setStats(prev => ({
+                        ...prev,
+                        balance: data.new_balance,
+                        totalEarnings: data.total_earnings
+                    }))
+                }}
+            />
+
             {/* Stats cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statCards.map((stat, index) => (
@@ -190,8 +206,8 @@ export default function Dashboard() {
                             <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-glass-bg border border-glass-border">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'deposit' ? 'bg-accent-green/20 text-accent-green' :
-                                            tx.type === 'withdrawal' ? 'bg-accent-red/20 text-accent-red' :
-                                                'bg-accent-cyan/20 text-accent-cyan'
+                                        tx.type === 'withdrawal' ? 'bg-accent-red/20 text-accent-red' :
+                                            'bg-accent-cyan/20 text-accent-cyan'
                                         }`}>
                                         {tx.type === 'deposit' ? <ArrowDownToLine className="w-5 h-5" /> :
                                             tx.type === 'withdrawal' ? <ArrowUpRight className="w-5 h-5" /> :
@@ -211,7 +227,7 @@ export default function Dashboard() {
                                         {tx.type === 'deposit' || tx.type === 'earning' ? '+' : '-'}${parseFloat(tx.amount).toLocaleString()}
                                     </div>
                                     <div className={`text-xs capitalize ${tx.status === 'completed' ? 'text-accent-green' :
-                                            tx.status === 'pending' ? 'text-accent-yellow' : 'text-accent-red'
+                                        tx.status === 'pending' ? 'text-accent-yellow' : 'text-accent-red'
                                         }`}>
                                         {tx.status}
                                     </div>

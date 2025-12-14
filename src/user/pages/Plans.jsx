@@ -27,8 +27,8 @@ export default function Rigs() {
             ])
 
             if (rigsRes.success && rigsRes.data) {
-                // rigsRes.data contains { available: [], owned: [] }
-                setRigs(rigsRes.data.available || [])
+                // rigsRes.data contains { rigs: [], user_rigs: [] }
+                setRigs(rigsRes.data.rigs || [])
             }
 
             if (dashRes.success && dashRes.data) {
@@ -211,17 +211,30 @@ export default function Rigs() {
                                         ${(parseFloat(rig.daily_earning) * rig.duration).toFixed(2)}
                                     </span>
                                 </div>
+                                {rig.user_owned_count > 0 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400">You Own</span>
+                                        <span className="text-accent-purple font-medium">
+                                            {rig.user_owned_count} / {rig.max_purchase}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Purchase Button */}
                             <button
                                 onClick={() => handlePurchase(rig)}
-                                className={`w-full py-3 rounded-xl font-semibold transition-all ${rig.is_free
-                                    ? 'bg-accent-green hover:bg-accent-green/80 text-white'
-                                    : 'btn-primary'
+                                disabled={!rig.can_purchase}
+                                className={`w-full py-3 rounded-xl font-semibold transition-all ${!rig.can_purchase
+                                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                        : rig.is_free
+                                            ? 'bg-accent-green hover:bg-accent-green/80 text-white'
+                                            : 'btn-primary'
                                     }`}
                             >
-                                {rig.is_free ? 'Claim Free Rig' : 'Purchase Rig'}
+                                {!rig.can_purchase
+                                    ? (rig.is_free ? 'Already Claimed' : 'Max Reached')
+                                    : (rig.is_free ? 'Claim Free Rig' : 'Purchase Rig')}
                             </button>
                         </div>
                     ))}

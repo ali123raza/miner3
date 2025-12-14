@@ -40,6 +40,10 @@ try {
         require_once __DIR__ . '/controllers/AuthController.php';
         (new AuthController())->me();
     }
+    elseif ($uri === '/plans' && $method === 'GET') {
+        require_once __DIR__ . '/controllers/PublicController.php';
+        (new PublicController())->getPlans();
+    }
 
     // User routes
     elseif ($uri === '/user/dashboard' && $method === 'GET') {
@@ -53,6 +57,10 @@ try {
     elseif ($uri === '/user/rigs/purchase' && $method === 'POST') {
         require_once __DIR__ . '/controllers/UserController.php';
         (new UserController())->purchaseRig();
+    }
+    elseif ($uri === '/user/collect-earnings' && $method === 'POST') {
+        require_once __DIR__ . '/controllers/UserController.php';
+        (new UserController())->collectEarnings();
     }
     elseif ($uri === '/user/deposits' && $method === 'GET') {
         require_once __DIR__ . '/controllers/UserController.php';

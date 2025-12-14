@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Shield, Zap, TrendingUp, Users, ChevronRight, Bitcoin } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react'
+import api from '../services/api'
 
 export default function LandingPage() {
     const { isAuthenticated, user } = useAuth()
@@ -28,12 +30,47 @@ export default function LandingPage() {
         }
     ]
 
-    const plans = [
-        { name: 'Starter', roi: '5%', duration: '7 Days', min: '$100', color: 'cyan' },
-        { name: 'Silver', roi: '8%', duration: '14 Days', min: '$1,000', color: 'purple' },
-        { name: 'Gold', roi: '12%', duration: '30 Days', min: '$5,000', color: 'yellow' },
-        { name: 'Platinum', roi: '18%', duration: '60 Days', min: '$20,000', color: 'pink' }
-    ]
+    const [plans, setPlans] = useState([])
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const response = await api.getPublicPlans();
+                if (response.data && Array.isArray(response.data)) {
+                    const formattedPlans = response.data.map(plan => {
+                        // Calculate ROI based on daily earning * duration / price
+                        const price = parseFloat(plan.price);
+                        const daily = parseFloat(plan.daily_earning);
+                        const duration = parseInt(plan.duration);
+
+                        let roiString = 'N/A';
+                        if (price > 0) {
+                            const roiVal = (daily * duration / price) * 100;
+                            roiString = `${Math.round(roiVal)}%`;
+                        } else {
+                            roiString = 'Free';
+                        }
+
+                        return {
+                            name: plan.name,
+                            roi: roiString,
+                            daily: `$${daily.toFixed(2)}`,
+                            hashRate: parseFloat(plan.hash_rate),
+                            hashUnit: plan.hash_unit,
+                            duration: `${plan.duration} ${plan.duration_unit.charAt(0).toUpperCase() + plan.duration_unit.slice(1)}`,
+                            price: `$${price.toLocaleString()}`,
+                            color: plan.color || 'cyan'
+                        };
+                    });
+                    // Limit to 4 plans if you want to maintain the layout or show all
+                    setPlans(formattedPlans);
+                }
+            } catch (error) {
+                console.error("Failed to fetch plans", error);
+            }
+        };
+        fetchPlans();
+    }, []);
 
     const stats = [
         { label: 'Total Users', value: '12,500+' },
@@ -158,18 +195,18 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Plans Section */}
+            {/* Rigs Section */}
             <section id="plans" className="relative z-10 px-6 py-24">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-white mb-4">Investment Plans</h2>
+                        <h2 className="text-4xl font-bold text-white mb-4">Mining Rigs</h2>
                         <p className="text-gray-400 max-w-2xl mx-auto">
-                            Choose the perfect plan for your investment goals
+                            Choose the perfect hardware for your mining goals
                         </p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {plans.map((plan, index) => (
+                        {plans.map((rig, index) => (
                             <div
                                 key={index}
                                 className={`glass-card-hover p-8 relative overflow-hidden group ${index === 2 ? 'ring-2 ring-accent-yellow/50' : ''
@@ -180,12 +217,30 @@ export default function LandingPage() {
                                         Popular
                                     </div>
                                 )}
-                                <h3 className={`text-2xl font-bold mb-4 text-accent-${plan.color}`}>{plan.name}</h3>
-                                <div className="text-5xl font-bold text-white mb-2">{plan.roi}</div>
-                                <div className="text-gray-400 mb-6">ROI in {plan.duration}</div>
+                                <h3 className={`text-2xl font-bold mb-2 text-accent-${rig.color}`}>{rig.name}</h3>
+                                <div className="flex items-end gap-2 mb-4">
+                                    <span className="text-4xl font-bold text-white">{rig.hashRate}</span>
+                                    <span className="text-gray-400 mb-1">{rig.hashUnit}</span>
+                                </div>
+
+                                <div className="space-y-3 mb-6">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400">Daily Profit</span>
+                                        <span className="text-white font-medium">{rig.daily}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400">ROI</span>
+                                        <span className="text-accent-green font-medium">{rig.roi}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400">Duration</span>
+                                        <span className="text-white">{rig.duration}</span>
+                                    </div>
+                                </div>
+
                                 <div className="border-t border-glass-border pt-6 mb-6">
-                                    <div className="text-sm text-gray-400">Minimum Investment</div>
-                                    <div className="text-xl font-semibold text-white">{plan.min}</div>
+                                    <div className="text-sm text-gray-400">Price</div>
+                                    <div className="text-xl font-semibold text-white">{rig.price}</div>
                                 </div>
                                 <Link
                                     to="/register"
@@ -194,7 +249,7 @@ export default function LandingPage() {
                                         : 'bg-glass-bg border border-glass-border text-white hover:border-accent-cyan/50'
                                         }`}
                                 >
-                                    Invest Now
+                                    Start Mining
                                     <ArrowRight className="w-4 h-4" />
                                 </Link>
                             </div>
