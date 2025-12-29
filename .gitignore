@@ -28,3 +28,7 @@ dist-ssr
 .env
 .env.test
 .env.production
+*.zip
+commandlinetools.zip
+*.apk
+*.aab

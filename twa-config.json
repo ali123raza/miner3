@@ -1,0 +1,31 @@
+{
+  "project": {
+    "name": "CloudMiner",
+    "shortName": "CloudMiner",
+    "packageId": "com.cloudminer.app",
+    "description": "Professional Crypto Mining & Investment Platform"
+  },
+  "domain": {
+    "url": "mediumseagreen-armadillo-625133.hostingersite.com",
+    "manifestUrl": "https://mediumseagreen-armadillo-625133.hostingersite.com/manifest.json"
+  },
+  "colors": {
+    "theme": "#1a1f2e",
+    "background": "#1a1f2e",
+    "statusBar": "#1a1f2e"
+  },
+  "keystore": {
+    "alias": "cloudminer-key",
+    "filename": "cloudminer.keystore",
+    "validity": 10000
+  },
+  "versions": {
+    "name": "1.0.0",
+    "code": 1
+  },
+  "instructions": {
+    "step1": "Update 'domain.url' with your actual production domain",
+    "step2": "Run: node setup-twa.js",
+    "step3": "Follow the prompts to build your Android app"
+  }
+}
